@@ -12,22 +12,22 @@ import android.view.View;
 import com.bbayar.movieviewer.R;
 import com.bbayar.movieviewer.model.Result;
 import com.bbayar.movieviewer.model.TvResponse;
-import com.bbayar.movieviewer.model.rest.ApiClient;
-import com.bbayar.movieviewer.model.rest.ApiInterface;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static String API_KEY = "21f91637045fc30ac59759b75acc9ca0";
+    public static String API_KEY = "21f91637045fc30ac59759b75acc9ca0";
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -43,9 +43,18 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         if (savedInstanceState == null || resultList == null) {
-            loadData();
+            try {
+                resultList = loadData();
+            } catch (ExecutionException e) {
+                Log.d(TAG, "ExecutionException");
+            } catch (InterruptedException e) {
+                Log.d(TAG, "InterruptedException");
+            }
         }
-        showMainFragment();
+
+        Log.d(TAG, "resultList = " + resultList);
+
+        //showMainFragment();
 
     }
 
@@ -59,23 +68,12 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private synchronized void loadData() {
-        Log.d(TAG, "loadData() called");
-        ApiInterface apiService = ApiClient
-                .getClient()
-                .create(ApiInterface.class);
-        Call<TvResponse> call = apiService.getTvResponse(API_KEY);
-        call.enqueue(new Callback<TvResponse>() {
-            @Override
-            public void onResponse(Call<TvResponse> call, Response<TvResponse> response) {
-                resultList = response.body().getResults();
-            }
-
-            @Override
-            public void onFailure(Call<TvResponse> call, Throwable t) {
-                Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
-            }
-        });
+    private List<Result> loadData() throws ExecutionException, InterruptedException {
+        ExecutorService exec = Executors.newSingleThreadExecutor();
+        Future<Response<TvResponse>> future = exec.submit(new DataLoader());
+        List<Result> results = future.get().body().getResults();
+        exec.shutdown();
+        return results;
     }
 
     @OnClick(R.id.fab) public void onFabClick(View view) {

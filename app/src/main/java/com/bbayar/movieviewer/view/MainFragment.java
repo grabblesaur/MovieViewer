@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.bbayar.movieviewer.R;
 import com.bbayar.movieviewer.model.Result;
+import com.bbayar.movieviewer.view.adapter.MoviesAdapter;
 
 import org.parceler.Parcels;
 
@@ -57,6 +59,12 @@ public class MainFragment extends Fragment {
         unbinder = ButterKnife.bind(this, view);
         resultList = Parcels.unwrap(getArguments().getParcelable(RESULT_LIST_KEY));
         Log.d(TAG, "onViewCreated: resultList: " + resultList);
+        setUpRecyclerView();
+    }
+
+    private void setUpRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(new MoviesAdapter(resultList));
     }
 
     @Override
