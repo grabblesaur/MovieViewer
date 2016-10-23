@@ -34,6 +34,7 @@ public class MainFragment extends Fragment {
     private Unbinder unbinder;
 
     private List<Result> resultList;
+    private MoviesAdapter moviesAdapter;
 
     public static MainFragment newInstance(List<Result> list) {
         Log.d(TAG, "newInstance() called with: list = [" + list + "]");
@@ -63,8 +64,9 @@ public class MainFragment extends Fragment {
     }
 
     private void setUpRecyclerView() {
+        moviesAdapter = new MoviesAdapter(resultList);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(new MoviesAdapter(resultList));
+        recyclerView.setAdapter(moviesAdapter);
     }
 
     @Override
@@ -72,5 +74,9 @@ public class MainFragment extends Fragment {
         Log.d(TAG, "onDestroy() called");
         super.onDestroy();
         unbinder.unbind();
+    }
+
+    public MoviesAdapter getAdapter() {
+        return moviesAdapter;
     }
 }
